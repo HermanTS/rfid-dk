@@ -2,8 +2,8 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-
-
+#include "board.h"
+#include "spi.h"
 // ----- main() ---------------------------------------------------------------
 
 // Sample pragmas to cope with warnings. Please note the related line at
@@ -15,7 +15,13 @@
 
 void main()
 {
+        spi1_gpio_init();
+        spi1_periph_init();
 
+
+        while(1){
+
+        }
 }
 
 #pragma GCC diagnostic pop
