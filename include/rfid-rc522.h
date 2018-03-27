@@ -51,8 +51,8 @@
  *      #define MFRC522_CS_PORT                                 GPIOG
  *      #define MFRC522_CS_PIN                                  GPIO_Pin_2
  */
-#ifndef TM_MFRC522_H
-#define TM_MFRC522_H
+#ifndef RFID_RC522_H
+#define RFID_RC522_H
 /**
  * Library dependencies
  * - STM32F10x
@@ -90,8 +90,6 @@
 #define MI_ERR             !MI_OK
 #define MI_NOTAGERR        2
 
-//#define MFRC522_CS_LOW                                  MFRC522_CS_PORT->BSRRH = MFRC522_CS_PIN;
-//#define MFRC522_CS_HIGH                                 MFRC522_CS_PORT->BSRRL = MFRC522_CS_PIN;
 
 /* MFRC522 Commands */
 #define PCD_IDLE                                                0x00   //NO action; Cancel the current command
@@ -200,7 +198,7 @@
  * Prepare MFRC522 to work with RFIDs
  *
  */
-extern void TM_MFRC522_Init(void);
+extern void rfid_rc522_init(void);
 
 /**
  * Check for RFID card existance
@@ -212,7 +210,7 @@ extern void TM_MFRC522_Init(void);
  *
  * Returns MI_OK if card is detected
  */
-extern uint8_t TM_MFRC522_Check(uint8_t* id);
+extern uint8_t rfid_rc522_check(uint8_t* id);
 
 /**
  * Compare 2 RFID ID's
@@ -226,28 +224,28 @@ extern uint8_t TM_MFRC522_Check(uint8_t* id);
  *
  * Returns MI_OK if IDs are the same, or MI_ERR if not
  */
-extern uint8_t TM_MFRC522_Compare(uint8_t* CardID, uint8_t* CompareID);
+extern uint8_t rfid_rc522_compare(uint8_t* CardID, uint8_t* CompareID);
 
 /**
  * Private functions
  */
-extern void TM_MFRC522_InitPins(void);
-extern void TM_MFRC522_WriteRegister(uint8_t addr, uint8_t val);
-extern uint8_t TM_MFRC522_ReadRegister(uint8_t addr);
-extern void TM_MFRC522_SetBitMask(uint8_t reg, uint8_t mask);
-extern void TM_MFRC522_ClearBitMask(uint8_t reg, uint8_t mask);
-extern void TM_MFRC522_AntennaOn(void);
-extern void TM_MFRC522_AntennaOff(void);
-extern void TM_MFRC522_Reset(void);
-extern uint8_t TM_MFRC522_Request(uint8_t reqMode, uint8_t* TagType);
-extern uint8_t TM_MFRC522_ToCard(uint8_t command, uint8_t* sendData, uint8_t sendLen, uint8_t* backData, uint16_t* backLen);
-extern uint8_t TM_MFRC522_Anticoll(uint8_t* serNum);
-extern void TM_MFRC522_CalculateCRC(uint8_t* pIndata, uint8_t len, uint8_t* pOutData);
-extern uint8_t TM_MFRC522_SelectTag(uint8_t* serNum);
-extern uint8_t TM_MFRC522_Auth(uint8_t authMode, uint8_t BlockAddr, uint8_t* Sectorkey, uint8_t* serNum);
-extern uint8_t TM_MFRC522_Read(uint8_t blockAddr, uint8_t* recvData);
-extern uint8_t TM_MFRC522_Write(uint8_t blockAddr, uint8_t* writeData);
-extern void TM_MFRC522_Halt(void);
+extern void rfid_rc522_init_pins(void);
+extern void rfid_rc522_write_register(uint8_t addr, uint8_t val);
+extern uint8_t rfid_rc522_read_register(uint8_t addr);
+extern void rfid_rc522_set_bit_mask(uint8_t reg, uint8_t mask);
+extern void rfid_rc522_clear_bit_mask(uint8_t reg, uint8_t mask);
+extern void rfid_rc522_antenna_on(void);
+extern void rfid_rc522_antenna_off(void);
+extern void rfid_rc522_reset(void);
+extern uint8_t rfid_rc522_request(uint8_t reqMode, uint8_t* TagType);
+extern uint8_t rfid_rc522_to_card(uint8_t command, uint8_t* sendData, uint8_t sendLen, uint8_t* backData, uint16_t* backLen);
+extern uint8_t rfid_rc522_anticoll(uint8_t* serNum);
+extern void rfid_rc522_calculate_CRC(uint8_t* pIndata, uint8_t len, uint8_t* pOutData);
+extern uint8_t rfid_rc522_select_tag(uint8_t* serNum);
+extern uint8_t rfid_rc522_auth(uint8_t authMode, uint8_t BlockAddr, uint8_t* Sectorkey, uint8_t* serNum);
+extern uint8_t rfid_rc522_read(uint8_t blockAddr, uint8_t* recvData);
+extern uint8_t rfid_rc522_write(uint8_t blockAddr, uint8_t* writeData);
+extern void rfid_rc522_halt(void);
 
 #endif
 

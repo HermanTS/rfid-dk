@@ -4,17 +4,22 @@
  *  Created on: 20 ���. 2018 �.
  *      Author: gstsvetkov
  */
-#include "stm32f10x.h"
 #include "spi.h"
 
 
 uint8_t data;
 
-void spi1_send_byte(uint8_t data){
-        if (SPI1->SR & SPI_SR_TXE)
+void spi_send_byte(SPI_TypeDef *spi , uint8_t data){
+        if (spi->SR & SPI_SR_TXE)
         {
-            SPI1->DR = data;
+            spi->DR = data;
         }
+}
+
+uint8_t spi_read_byte(SPI_TypeDef *spi){
+        while (!(SPI1->SR & SPI_SR_RXNE))
+            ; //TODO: add time management
+        return SPI1->DR;
 }
 
 void spi1_gpio_init(){
@@ -62,11 +67,10 @@ void spi1_periph_init(){
 
         //enable SPI1 interrupt
         SPI1->CR2 |= SPI_CR2_RXNEIE;
-        NVIC_EnableIRQ(SPI1_IRQn);
 }
 
 void SPI1_IRQHandler(){
         if (SPI1->SR & SPI_SR_RXNE)
-            data = SPI1->DR;
+            data = spi_read_byte(SPI1);
         SPI1->SR &= ~SPI_SR_RXNE;
 }

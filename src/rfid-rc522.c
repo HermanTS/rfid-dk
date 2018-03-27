@@ -18,39 +18,51 @@
  */
 #include "rfid-rc522.h"
 
-void TM_MFRC522_Init(void) {
+void rfid_rc522_activate(){
 
-        TM_MFRC522_Reset();
+MFRC522_CS_PORT->BSRR = MFRC522_CS_PIN;
 
-        TM_MFRC522_WriteRegister(MFRC522_REG_T_MODE, 0x8D);
-        TM_MFRC522_WriteRegister(MFRC522_REG_T_PRESCALER, 0x3E);
-        TM_MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_L, 30);
-        TM_MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_H, 0);
-
-        /* 48dB gain */
-        TM_MFRC522_WriteRegister(MFRC522_REG_RF_CFG, 0x70);
-
-        TM_MFRC522_WriteRegister(MFRC522_REG_TX_AUTO, 0x40);
-        TM_MFRC522_WriteRegister(MFRC522_REG_MODE, 0x3D);
-
-        TM_MFRC522_AntennaOn();         //Open the antenna
 }
 
-uint8_t TM_MFRC522_Check(uint8_t* id) {
+void rfid_rc522_deactivate(){
+
+MFRC522_CS_PORT->BRR = MFRC522_CS_PIN;
+
+}
+
+void rfid_rc522_init(void) {
+
+        rfid_rc522_reset();
+
+        rfid_rc522_write_register(MFRC522_REG_T_MODE, 0x8D);
+        rfid_rc522_write_register(MFRC522_REG_T_PRESCALER, 0x3E);
+        rfid_rc522_write_register(MFRC522_REG_T_RELOAD_L, 30);
+        rfid_rc522_write_register(MFRC522_REG_T_RELOAD_H, 0);
+
+        /* 48dB gain */
+        rfid_rc522_write_register(MFRC522_REG_RF_CFG, 0x70);
+
+        rfid_rc522_write_register(MFRC522_REG_TX_AUTO, 0x40);
+        rfid_rc522_write_register(MFRC522_REG_MODE, 0x3D);
+
+        rfid_rc522_antenna_on();         //Open the antenna
+}
+
+uint8_t rfid_rc522_check(uint8_t* id) {
         uint8_t status;
         //Find cards, return card type
-        status = TM_MFRC522_Request(PICC_REQIDL, id);
+        status = rfid_rc522_request(PICC_REQIDL, id);
         if (status == MI_OK) {
                 //Card detected
                 //Anti-collision, return card serial number 4 bytes
-                status = TM_MFRC522_Anticoll(id);
+                status = rfid_rc522_anticoll(id);
         }
-        TM_MFRC522_Halt();                      //Command card into hibernation
+        rfid_rc522_halt();                      //Command card into hibernation
 
         return status;
 }
 
-uint8_t TM_MFRC522_Compare(uint8_t* CardID, uint8_t* CompareID) {
+uint8_t rfid_rc522_compare(uint8_t* CardID, uint8_t* CompareID) {
         uint8_t i;
         for (i = 0; i < 5; i++) {
                 if (CardID[i] != CompareID[i]) {
@@ -61,63 +73,63 @@ uint8_t TM_MFRC522_Compare(uint8_t* CardID, uint8_t* CompareID) {
 }
 
 
-void TM_MFRC522_WriteRegister(uint8_t addr, uint8_t val) {
+void rfid_rc522_write_register(uint8_t addr, uint8_t val) {
         //CS low
-        MFRC522_CS_LOW;
+        rfid_rc522_activate();
         //Send address
-        TM_SPI_Send(MFRC522_SPI, (addr << 1) & 0x7E);
+        spi_send_byte(MFRC522_SPI, (addr << 1) & 0x7E);
         //Send data
-        TM_SPI_Send(MFRC522_SPI, val);
+        spi_send_byte(MFRC522_SPI, val);
         //CS high
-        MFRC522_CS_HIGH;
+        rfid_rc522_deactivate();
 }
 
-uint8_t TM_MFRC522_ReadRegister(uint8_t addr) {
+uint8_t rfid_rc522_read_register(uint8_t addr) {
         uint8_t val;
         //CS low
-        MFRC522_CS_LOW;
+        rfid_rc522_activate();
 
-        TM_SPI_Send(MFRC522_SPI, ((addr << 1) & 0x7E) | 0x80);
-        val = TM_SPI_Send(MFRC522_SPI, MFRC522_DUMMY);
+        spi_send_byte(MFRC522_SPI, ((addr << 1) & 0x7E) | 0x80);
+        val = spi_read_byte(MFRC522_SPI);
         //CS high
-        MFRC522_CS_HIGH;
+        rfid_rc522_deactivate();
 
         return val;
 }
 
-void TM_MFRC522_SetBitMask(uint8_t reg, uint8_t mask) {
-        TM_MFRC522_WriteRegister(reg, TM_MFRC522_ReadRegister(reg) | mask);
+void rfid_rc522_set_bit_mask(uint8_t reg, uint8_t mask) {
+        rfid_rc522_write_register(reg, rfid_rc522_read_register(reg) | mask);
 }
 
-void TM_MFRC522_ClearBitMask(uint8_t reg, uint8_t mask){
-        TM_MFRC522_WriteRegister(reg, TM_MFRC522_ReadRegister(reg) & (~mask));
+void rfid_rc522_clear_bit_mask(uint8_t reg, uint8_t mask){
+        rfid_rc522_write_register(reg, rfid_rc522_read_register(reg) & (~mask));
 }
 
-void TM_MFRC522_AntennaOn(void) {
+void rfid_rc522_antenna_on(void) {
         uint8_t temp;
 
-        temp = TM_MFRC522_ReadRegister(MFRC522_REG_TX_CONTROL);
+        temp = rfid_rc522_read_register(MFRC522_REG_TX_CONTROL);
         if (!(temp & 0x03)) {
-                TM_MFRC522_SetBitMask(MFRC522_REG_TX_CONTROL, 0x03);
+                rfid_rc522_set_bit_mask(MFRC522_REG_TX_CONTROL, 0x03);
         }
 }
 
-void TM_MFRC522_AntennaOff(void) {
-        TM_MFRC522_ClearBitMask(MFRC522_REG_TX_CONTROL, 0x03);
+void rfid_rc522_antenna_off(void) {
+        rfid_rc522_clear_bit_mask(MFRC522_REG_TX_CONTROL, 0x03);
 }
 
-void TM_MFRC522_Reset(void) {
-        TM_MFRC522_WriteRegister(MFRC522_REG_COMMAND, PCD_RESETPHASE);
+void rfid_rc522_reset(void) {
+        rfid_rc522_write_register(MFRC522_REG_COMMAND, PCD_RESETPHASE);
 }
 
-uint8_t TM_MFRC522_Request(uint8_t reqMode, uint8_t* TagType) {
+uint8_t rfid_rc522_request(uint8_t reqMode, uint8_t* TagType) {
         uint8_t status;
         uint16_t backBits;                      //The received data bits
 
-        TM_MFRC522_WriteRegister(MFRC522_REG_BIT_FRAMING, 0x07);                //TxLastBists = BitFramingReg[2..0]     ???
+        rfid_rc522_write_register(MFRC522_REG_BIT_FRAMING, 0x07);                //TxLastBists = BitFramingReg[2..0]     ???
 
         TagType[0] = reqMode;
-        status = TM_MFRC522_ToCard(PCD_TRANSCEIVE, TagType, 1, TagType, &backBits);
+        status = rfid_rc522_to_card(PCD_TRANSCEIVE, TagType, 1, TagType, &backBits);
 
         if ((status != MI_OK) || (backBits != 0x10)) {
                 status = MI_ERR;
@@ -126,7 +138,7 @@ uint8_t TM_MFRC522_Request(uint8_t reqMode, uint8_t* TagType) {
         return status;
 }
 
-uint8_t TM_MFRC522_ToCard(uint8_t command, uint8_t* sendData, uint8_t sendLen, uint8_t* backData, uint16_t* backLen) {
+uint8_t rfid_rc522_to_card(uint8_t command, uint8_t* sendData, uint8_t sendLen, uint8_t* backData, uint16_t* backLen) {
         uint8_t status = MI_ERR;
         uint8_t irqEn = 0x00;
         uint8_t waitIRq = 0x00;
@@ -149,21 +161,21 @@ uint8_t TM_MFRC522_ToCard(uint8_t command, uint8_t* sendData, uint8_t sendLen, u
                         break;
         }
 
-        TM_MFRC522_WriteRegister(MFRC522_REG_COMM_IE_N, irqEn | 0x80);
-        TM_MFRC522_ClearBitMask(MFRC522_REG_COMM_IRQ, 0x80);
-        TM_MFRC522_SetBitMask(MFRC522_REG_FIFO_LEVEL, 0x80);
+        rfid_rc522_write_register(MFRC522_REG_COMM_IE_N, irqEn | 0x80);
+        rfid_rc522_clear_bit_mask(MFRC522_REG_COMM_IRQ, 0x80);
+        rfid_rc522_set_bit_mask(MFRC522_REG_FIFO_LEVEL, 0x80);
 
-        TM_MFRC522_WriteRegister(MFRC522_REG_COMMAND, PCD_IDLE);
+        rfid_rc522_write_register(MFRC522_REG_COMMAND, PCD_IDLE);
 
         //Writing data to the FIFO
         for (i = 0; i < sendLen; i++) {
-                TM_MFRC522_WriteRegister(MFRC522_REG_FIFO_DATA, sendData[i]);
+                rfid_rc522_write_register(MFRC522_REG_FIFO_DATA, sendData[i]);
         }
 
         //Execute the command
-        TM_MFRC522_WriteRegister(MFRC522_REG_COMMAND, command);
+        rfid_rc522_write_register(MFRC522_REG_COMMAND, command);
         if (command == PCD_TRANSCEIVE) {
-                TM_MFRC522_SetBitMask(MFRC522_REG_BIT_FRAMING, 0x80);           //StartSend=1,transmission of data starts
+                rfid_rc522_set_bit_mask(MFRC522_REG_BIT_FRAMING, 0x80);           //StartSend=1,transmission of data starts
         }
 
         //Waiting to receive data to complete
@@ -171,22 +183,22 @@ uint8_t TM_MFRC522_ToCard(uint8_t command, uint8_t* sendData, uint8_t sendLen, u
         do {
                 //CommIrqReg[7..0]
                 //Set1 TxIRq RxIRq IdleIRq HiAlerIRq LoAlertIRq ErrIRq TimerIRq
-                n = TM_MFRC522_ReadRegister(MFRC522_REG_COMM_IRQ);
+                n = rfid_rc522_read_register(MFRC522_REG_COMM_IRQ);
                 i--;
         } while ((i!=0) && !(n&0x01) && !(n&waitIRq));
 
-        TM_MFRC522_ClearBitMask(MFRC522_REG_BIT_FRAMING, 0x80);                 //StartSend=0
+        rfid_rc522_clear_bit_mask(MFRC522_REG_BIT_FRAMING, 0x80);                 //StartSend=0
 
         if (i != 0)  {
-                if (!(TM_MFRC522_ReadRegister(MFRC522_REG_ERROR) & 0x1B)) {
+                if (!(rfid_rc522_read_register(MFRC522_REG_ERROR) & 0x1B)) {
                         status = MI_OK;
                         if (n & irqEn & 0x01) {
                                 status = MI_NOTAGERR;
                         }
 
                         if (command == PCD_TRANSCEIVE) {
-                                n = TM_MFRC522_ReadRegister(MFRC522_REG_FIFO_LEVEL);
-                                lastBits = TM_MFRC522_ReadRegister(MFRC522_REG_CONTROL) & 0x07;
+                                n = rfid_rc522_read_register(MFRC522_REG_FIFO_LEVEL);
+                                lastBits = rfid_rc522_read_register(MFRC522_REG_CONTROL) & 0x07;
                                 if (lastBits) {
                                         *backLen = (n - 1) * 8 + lastBits;
                                 } else {
@@ -202,7 +214,7 @@ uint8_t TM_MFRC522_ToCard(uint8_t command, uint8_t* sendData, uint8_t sendLen, u
 
                                 //Reading the received data in FIFO
                                 for (i = 0; i < n; i++) {
-                                        backData[i] = TM_MFRC522_ReadRegister(MFRC522_REG_FIFO_DATA);
+                                        backData[i] = rfid_rc522_read_register(MFRC522_REG_FIFO_DATA);
                                 }
                         }
                 } else {
@@ -213,17 +225,17 @@ uint8_t TM_MFRC522_ToCard(uint8_t command, uint8_t* sendData, uint8_t sendLen, u
         return status;
 }
 
-uint8_t TM_MFRC522_Anticoll(uint8_t* serNum) {
+uint8_t rfid_rc522_anticoll(uint8_t* serNum) {
         uint8_t status;
         uint8_t i;
         uint8_t serNumCheck = 0;
         uint16_t unLen;
 
-        TM_MFRC522_WriteRegister(MFRC522_REG_BIT_FRAMING, 0x00);                //TxLastBists = BitFramingReg[2..0]
+        rfid_rc522_write_register(MFRC522_REG_BIT_FRAMING, 0x00);                //TxLastBists = BitFramingReg[2..0]
 
         serNum[0] = PICC_ANTICOLL;
         serNum[1] = 0x20;
-        status = TM_MFRC522_ToCard(PCD_TRANSCEIVE, serNum, 2, serNum, &unLen);
+        status = rfid_rc522_to_card(PCD_TRANSCEIVE, serNum, 2, serNum, &unLen);
 
         if (status == MI_OK) {
                 //Check card serial number
@@ -237,32 +249,32 @@ uint8_t TM_MFRC522_Anticoll(uint8_t* serNum) {
         return status;
 }
 
-void TM_MFRC522_CalculateCRC(uint8_t*  pIndata, uint8_t len, uint8_t* pOutData) {
+void rfid_rc522_calculate_CRC(uint8_t*  pIndata, uint8_t len, uint8_t* pOutData) {
         uint8_t i, n;
 
-        TM_MFRC522_ClearBitMask(MFRC522_REG_DIV_IRQ, 0x04);                     //CRCIrq = 0
-        TM_MFRC522_SetBitMask(MFRC522_REG_FIFO_LEVEL, 0x80);                    //Clear the FIFO pointer
+        rfid_rc522_clear_bit_mask(MFRC522_REG_DIV_IRQ, 0x04);                     //CRCIrq = 0
+        rfid_rc522_set_bit_mask(MFRC522_REG_FIFO_LEVEL, 0x80);                    //Clear the FIFO pointer
         //Write_MFRC522(CommandReg, PCD_IDLE);
 
         //Writing data to the FIFO
         for (i = 0; i < len; i++) {
-                TM_MFRC522_WriteRegister(MFRC522_REG_FIFO_DATA, *(pIndata+i));
+                rfid_rc522_write_register(MFRC522_REG_FIFO_DATA, *(pIndata+i));
         }
-        TM_MFRC522_WriteRegister(MFRC522_REG_COMMAND, PCD_CALCCRC);
+        rfid_rc522_write_register(MFRC522_REG_COMMAND, PCD_CALCCRC);
 
         //Wait CRC calculation is complete
         i = 0xFF;
         do {
-                n = TM_MFRC522_ReadRegister(MFRC522_REG_DIV_IRQ);
+                n = rfid_rc522_read_register(MFRC522_REG_DIV_IRQ);
                 i--;
         } while ((i!=0) && !(n&0x04));                  //CRCIrq = 1
 
         //Read CRC calculation result
-        pOutData[0] = TM_MFRC522_ReadRegister(MFRC522_REG_CRC_RESULT_L);
-        pOutData[1] = TM_MFRC522_ReadRegister(MFRC522_REG_CRC_RESULT_M);
+        pOutData[0] = rfid_rc522_read_register(MFRC522_REG_CRC_RESULT_L);
+        pOutData[1] = rfid_rc522_read_register(MFRC522_REG_CRC_RESULT_M);
 }
 
-uint8_t TM_MFRC522_SelectTag(uint8_t* serNum) {
+uint8_t rfid_rc522_select_tag(uint8_t* serNum) {
         uint8_t i;
         uint8_t status;
         uint8_t size;
@@ -274,8 +286,8 @@ uint8_t TM_MFRC522_SelectTag(uint8_t* serNum) {
         for (i = 0; i < 5; i++) {
                 buffer[i+2] = *(serNum+i);
         }
-        TM_MFRC522_CalculateCRC(buffer, 7, &buffer[7]);         //??
-        status = TM_MFRC522_ToCard(PCD_TRANSCEIVE, buffer, 9, buffer, &recvBits);
+        rfid_rc522_calculate_CRC(buffer, 7, &buffer[7]);         //??
+        status = rfid_rc522_to_card(PCD_TRANSCEIVE, buffer, 9, buffer, &recvBits);
 
         if ((status == MI_OK) && (recvBits == 0x18)) {
                 size = buffer[0];
@@ -286,7 +298,7 @@ uint8_t TM_MFRC522_SelectTag(uint8_t* serNum) {
         return size;
 }
 
-uint8_t TM_MFRC522_Auth(uint8_t authMode, uint8_t BlockAddr, uint8_t* Sectorkey, uint8_t* serNum) {
+uint8_t rfid_rc522_auth(uint8_t authMode, uint8_t BlockAddr, uint8_t* Sectorkey, uint8_t* serNum) {
         uint8_t status;
         uint16_t recvBits;
         uint8_t i;
@@ -301,23 +313,23 @@ uint8_t TM_MFRC522_Auth(uint8_t authMode, uint8_t BlockAddr, uint8_t* Sectorkey,
         for (i=0; i<4; i++) {
                 buff[i+8] = *(serNum+i);
         }
-        status = TM_MFRC522_ToCard(PCD_AUTHENT, buff, 12, buff, &recvBits);
+        status = rfid_rc522_to_card(PCD_AUTHENT, buff, 12, buff, &recvBits);
 
-        if ((status != MI_OK) || (!(TM_MFRC522_ReadRegister(MFRC522_REG_STATUS2) & 0x08))) {
+        if ((status != MI_OK) || (!(rfid_rc522_read_register(MFRC522_REG_STATUS2) & 0x08))) {
                 status = MI_ERR;
         }
 
         return status;
 }
 
-uint8_t TM_MFRC522_Read(uint8_t blockAddr, uint8_t* recvData) {
+uint8_t rfid_rc522_read(uint8_t blockAddr, uint8_t* recvData) {
         uint8_t status;
         uint16_t unLen;
 
         recvData[0] = PICC_READ;
         recvData[1] = blockAddr;
-        TM_MFRC522_CalculateCRC(recvData,2, &recvData[2]);
-        status = TM_MFRC522_ToCard(PCD_TRANSCEIVE, recvData, 4, recvData, &unLen);
+        rfid_rc522_calculate_CRC(recvData,2, &recvData[2]);
+        status = rfid_rc522_to_card(PCD_TRANSCEIVE, recvData, 4, recvData, &unLen);
 
         if ((status != MI_OK) || (unLen != 0x90)) {
                 status = MI_ERR;
@@ -326,7 +338,7 @@ uint8_t TM_MFRC522_Read(uint8_t blockAddr, uint8_t* recvData) {
         return status;
 }
 
-uint8_t TM_MFRC522_Write(uint8_t blockAddr, uint8_t* writeData) {
+uint8_t rfid_rc522_write(uint8_t blockAddr, uint8_t* writeData) {
         uint8_t status;
         uint16_t recvBits;
         uint8_t i;
@@ -334,8 +346,8 @@ uint8_t TM_MFRC522_Write(uint8_t blockAddr, uint8_t* writeData) {
 
         buff[0] = PICC_WRITE;
         buff[1] = blockAddr;
-        TM_MFRC522_CalculateCRC(buff, 2, &buff[2]);
-        status = TM_MFRC522_ToCard(PCD_TRANSCEIVE, buff, 4, buff, &recvBits);
+        rfid_rc522_calculate_CRC(buff, 2, &buff[2]);
+        status = rfid_rc522_to_card(PCD_TRANSCEIVE, buff, 4, buff, &recvBits);
 
         if ((status != MI_OK) || (recvBits != 4) || ((buff[0] & 0x0F) != 0x0A)) {
                 status = MI_ERR;
@@ -346,8 +358,8 @@ uint8_t TM_MFRC522_Write(uint8_t blockAddr, uint8_t* writeData) {
                 for (i = 0; i < 16; i++) {
                         buff[i] = *(writeData+i);
                 }
-                TM_MFRC522_CalculateCRC(buff, 16, &buff[16]);
-                status = TM_MFRC522_ToCard(PCD_TRANSCEIVE, buff, 18, buff, &recvBits);
+                rfid_rc522_calculate_CRC(buff, 16, &buff[16]);
+                status = rfid_rc522_to_card(PCD_TRANSCEIVE, buff, 18, buff, &recvBits);
 
                 if ((status != MI_OK) || (recvBits != 4) || ((buff[0] & 0x0F) != 0x0A)) {
                         status = MI_ERR;
@@ -357,14 +369,14 @@ uint8_t TM_MFRC522_Write(uint8_t blockAddr, uint8_t* writeData) {
         return status;
 }
 
-void TM_MFRC522_Halt(void) {
+void rfid_rc522_halt(void) {
         uint16_t unLen;
         uint8_t buff[4];
 
         buff[0] = PICC_HALT;
         buff[1] = 0;
-        TM_MFRC522_CalculateCRC(buff, 2, &buff[2]);
+        rfid_rc522_calculate_CRC(buff, 2, &buff[2]);
 
-        TM_MFRC522_ToCard(PCD_TRANSCEIVE, buff, 4, buff, &unLen);
+        rfid_rc522_to_card(PCD_TRANSCEIVE, buff, 4, buff, &unLen);
 }
 
