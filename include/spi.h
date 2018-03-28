@@ -1,7 +1,7 @@
 /*
  * spi.h
  *
- *  Created on: 20 пїЅпїЅпїЅ. 2018 пїЅ.
+ *  Created on: 28 мар. 2018 г.
  *      Author: gstsvetkov
  */
 
