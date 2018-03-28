@@ -9,7 +9,7 @@
 #define INCLUDE_ILI9341_H_
 
 #include "stm32f10x.h"
-
+#include "spi.h"
 
 #if  !defined(SET) || !defined(RESET)
 #define SET             (uint8_t)0x01
@@ -32,38 +32,6 @@
 #define ILI9341_HEIGHT      320
 #define ILI9341_PIXEL_COUNT ILI9341_WIDTH * LCD_HEIGHT
 #endif
-
-//Commands
-#define ILI9341_RESET                           0x01
-#define ILI9341_SLEEP_OUT                       0x11
-#define ILI9341_GAMMA                           0x26
-#define ILI9341_DISPLAY_OFF                     0x28
-#define ILI9341_DISPLAY_ON                      0x29
-#define ILI9341_COLUMN_ADDR                     0x2A
-#define ILI9341_PAGE_ADDR                       0x2B
-#define ILI9341_GRAM                            0x2C
-#define ILI9341_MAC                             0x36
-#define ILI9341_PIXEL_FORMAT                    0x3A
-#define ILI9341_WDB                             0x51
-#define ILI9341_WCD                             0x53
-#define ILI9341_RGB_INTERFACE                   0xB0
-#define ILI9341_FRC                             0xB1
-#define ILI9341_BPC                             0xB5
-#define ILI9341_DFC                             0xB6
-#define ILI9341_POWER1                          0xC0
-#define ILI9341_POWER2                          0xC1
-#define ILI9341_VCOM1                           0xC5
-#define ILI9341_VCOM2                           0xC7
-#define ILI9341_POWERA                          0xCB
-#define ILI9341_POWERB                          0xCF
-#define ILI9341_PGAMMA                          0xE0
-#define ILI9341_NGAMMA                          0xE1
-#define ILI9341_DTCA                            0xE8
-#define ILI9341_DTCB                            0xEA
-#define ILI9341_POWER_SEQ                       0xED
-#define ILI9341_3GAMMA_EN                       0xF2
-#define ILI9341_INTERFACE                       0xF6
-#define ILI9341_PRC                                 0xF7
 
 //commands
 
@@ -122,8 +90,40 @@
 #define ILI9341_CMD_FRAME_CTRL_NM               0xB1
 #define ILI9341_CMD_FRAME_CTRL_IM               0xB2
 #define ILI9341_CMD_FRAME_CTRL_PM               0xB3
-#define ILI9341_CMD_DISPLAY_INVERSION_CTRL      0XB4
-#define ILI9341_CMD_BLANK_PORCH_CTRL            0XB5
+#define ILI9341_CMD_DISPLAY_INVERSION_CTRL      0xB4
+#define ILI9341_CMD_BLANK_PORCH_CTRL            0xB5
+#define ILI9341_CMD_DISPAY_FUNC_CTRL            0xB6
+#define ILI9341_CMD_SET_ENTRY_MODE              0xB7
+#define ILI9341_CMD_BACKLIGHT_CTRL1             0xB8
+#define ILI9341_CMD_BACKLIGHT_CTRL2             0xB9
+#define ILI9341_CMD_BACKLIGHT_CTRL3             0xBA
+#define ILI9341_CMD_BACKLIGHT_CTRL4             0xBB
+#define ILI9341_CMD_BACKLIGHT_CTRL5             0xBC
+#define ILI9341_CMD_BACKLIGHT_CTRL7             0xBE
+#define ILI9341_CMD_BACKLIGHT_CTRL8             0xBF
+#define ILI9341_CMD_POWER_CTRL1                 0xC0
+#define ILI9341_CMD_POWER_CTRL2                 0xC1
+#define ILI9341_CMD_VCOM_CTRL1                  0xC5
+#define ILI9341_CMD_VCOM_CTRL2                  0xC7
+#define ILI9341_CMD_NV_MEM_WRITE                0xD0
+#define ILI9341_CMD_NV_MEM_PRETECKT_KEY         0xD1
+#define ILI9341_CMD_NV_MEM_STATUS_READ          0xD2
+#define ILI9341_CMD_READ_ID4                    0xD3
+#define ILI9341_CMD_POSITIV_GAMMA_CORR          0xE0
+#define ILI9341_CMD_NEGATIV_GAMMA_CORR          0xE1
+#define ILI9341_CMD_DIGIT_GAMMA_CTRL1           0xE2
+#define ILI9341_CMD_DIGIT_GAMMA_CTRL2           0xE3
+#define ILI9341_CMD_INTERFACE_CTRL              0xF6
 
+// extend register command
+
+#define ILI9341_CMD_POWER_CTRLA                 0xCB
+#define ILI9341_CMD_POWER_CTRLB                 0xCF
+#define ILI9341_CMD_TIMER_CTRLA_1               0xE8
+#define ILI9341_CMD_TIMER_CTRLA_2               0xE9
+#define ILI9341_CMD_TIMER_CTRLB                 0xEA
+#define ILI9341_CMD_POWER_SEQ_CTRL              0xED
+#define ILI9341_CMD_GAMMA3_CTRL                 0xF2
+#define ILI9341_CMD_PUMP_RATIO_CTRL             0xF7
 
 #endif /* INCLUDE_ILI9341_H_ */
