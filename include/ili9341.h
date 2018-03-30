@@ -18,19 +18,24 @@
 
 #ifndef ILI9341_GPIO
 #define ILI9341_GPIO                    GPIOA
-#define ILI9341_PIN_RESET               GPIO_Pin_2
-#define ILI9341_PIN_DC                  GPIO_Pin_3
-#define ILI9341_PIN_CS                  GPIO_Pin_4
+#define ILI9341_PIN_RESET_NO            2
+#define ILI9341_PIN_DC_NO               3
+#define ILI9341_PIN_CS_NO               4
 #endif
+
 
 #ifndef ILI9341_SPI
 #define ILI9341_SPI                     SPI1
 #endif
 
+#define ILI9341_PIN_RESET               (1 << ILI9341_PIN_RESET_NO)
+#define ILI9341_PIN_DC                  (1 << ILI9341_PIN_DC_NO)
+#define ILI9341_PIN_CS                  (1 << ILI9341_PIN_CS_NO)
+
 #ifndef ILI9341_SCREEN_SIZE
 #define ILI9341_WIDTH       240
 #define ILI9341_HEIGHT      320
-#define ILI9341_PIXEL_COUNT ILI9341_WIDTH * LCD_HEIGHT
+#define ILI9341_PIXEL_COUNT (ILI9341_WIDTH * ILI9341_HEIGHT)
 #endif
 
 //commands
@@ -54,7 +59,7 @@
 #define ILI9341_CMD_GAMMA_SET                   0x26
 #define ILI9341_CMD_DISPLAY_OFF                 0x28
 #define ILI9341_CMD_DISPLAY_ON                  0x29
-#define ILI9341_CMD_SET_COLL_ADDR               0x2A
+#define ILI9341_CMD_SET_COLLUM_ADDR             0x2A
 #define ILI9341_CMD_SET_PAGE_ADDR               0x2B
 #define ILI9341_CMD_SET_COLOR                   0x2D
 #define ILI9341_CMD_WRITE_MEM                   0x2C
