@@ -8,47 +8,49 @@
 #include "board.h"
 #include "ili9341.h"
 
-void ili9341_rst_set_state(uint8_t state){
+void ili9341_rst_set_state(uint8_t state)
+{
         if (state == SET)
            ILI9341_GPIO->BSRR |= ILI9341_PIN_RESET;
        else
            ILI9341_GPIO->BSRR |= (ILI9341_PIN_RESET << 16);
 }
 
-void ili9341_cs_set_state(uint8_t state){
+void ili9341_cs_set_state(uint8_t state)
+{
         if (state == SET)
             ILI9341_GPIO->BSRR |= ILI9341_PIN_CS;
         else
             ILI9341_GPIO->BSRR |= (ILI9341_PIN_CS << 16);
 }
 
-void ili9341_dc_set_state(uint8_t state){
+void ili9341_dc_set_state(uint8_t state)
+{
         if (state == SET)
             ILI9341_GPIO->BSRR |= ILI9341_PIN_DC;
         else
             ILI9341_GPIO->BSRR |= (ILI9341_PIN_DC << 16);
 }
 
-void ili9341_send_command(uint8_t command){
+void ili9341_send_command(uint8_t command)
+{
+        spi_send_byte(ILI9341_SPI, command)
+                        ;
         ili9341_dc_set_state(RESET);
         ili9341_cs_set_state(RESET);
-
-        spi_send_byte(ILI9341_SPI, command);
-
-        ili9341_cs_set_state(SET);
 }
 
 
-void ili9341_send_data(uint8_t data){
-        ili9341_dc_set_state(SET);
-        ili9341_cs_set_state(RESET);
-
+void ili9341_send_data(uint8_t data)
+{
         spi_send_byte(ILI9341_SPI, data);
 
-        ili9341_cs_set_state(SET);
+        ili9341_dc_set_state(SET);
+        ili9341_cs_set_state(RESET);
 }
 
-void ili9341_gpio_init(){
+void ili9341_gpio_init()
+{
 /*
  * function of initialisation of CS, DC, RESET pins
  * CS - SPI chip select
@@ -82,7 +84,8 @@ void ili9341_gpio_init(){
 #endif
 }
 
-void ili9341_init(){
+void ili9341_init()
+{
         // reset lcd
         ili9341_rst_set_state(SET);
         ili9341_send_command(ILI9341_CMD_SOFT_RESET);
@@ -183,7 +186,9 @@ void ili9341_init(){
         ili9341_send_command(ILI9341_CMD_DISPLAY_ON);
 }
 
-void ili9341_set_cursor_position(uint16_t x_max, uint16_t x_min, uint16_t y_max, uint16_t y_min){
+void ili9341_set_cursor_position(uint16_t x_max, uint16_t x_min,
+                                 uint16_t y_max, uint16_t y_min)
+{
 
         ili9341_send_command(ILI9341_CMD_SET_COLLUM_ADDR);
         ili9341_send_data((uint8_t)(x_min >> 8));
@@ -198,7 +203,8 @@ void ili9341_set_cursor_position(uint16_t x_max, uint16_t x_min, uint16_t y_max,
         ili9341_send_data((uint8_t)(y_min & 0x00FF));
 }
 
-void ili9341_fill(uint16_t color){
+void ili9341_fill(uint16_t color)
+{
         uint8_t color_low, color_high;
 
         color_low = (uint8_t)(color & 0x00FF);
@@ -214,7 +220,8 @@ void ili9341_fill(uint16_t color){
         }
 }
 
-void ili9341_draw_pixel(uint16_t x, uint16_t y, uint16_t color){
+void ili9341_draw_pixel(uint16_t x, uint16_t y, uint16_t color)
+{
 
         ili9341_set_cursor_position(x, x, y, y);
 
@@ -223,6 +230,71 @@ void ili9341_draw_pixel(uint16_t x, uint16_t y, uint16_t color){
         ili9341_send_data((uint8_t)(color & 0x00FF));
 }
 
-void ili9341_put_char(uint16_t x, uint16_y, uint8_t character){
+void ili9341_draw_line(uint16_t x, uint16_t y, uint16_t colors[], uint32_t line_size)
+{
+        uint32_t i;
+
+        ili9341_set_cursor_position(x, x, y, y);
+
+        ili9341_send_command(ILI9341_CMD_WRITE_MEM);
+        for (i = 0; i < line_size; i++)
+        {
+                ili9341_send_data((uint8_t)(colors[i]>>8));
+                ili9341_send_data((uint8_t)(colors[i]&0x00FF));
+        }
+}
+
+void ili9341_draw_sqare(uint16_t x_top, uint16_t x_bottom,
+                        uint16_t y_right, uint16_t y_left,
+                        uint16_t border_px, uint16_t color)
+{
+        uint32_t i;
+        uint32_t pixels_in_line;
+
+        // firstly print top line
+        pixels_in_line = (y_right - y_left) * border_px;
+        ili9341_set_cursor_position(x_top, (x_top - border_px), y_right, y_left);
+
+        ili9341_send_command(ILI9341_CMD_WRITE_MEM);
+        for (i = 0; i < pixels_in_line; i++)
+        {
+                ili9341_send_data((uint8_t)(color >> 8));
+                ili9341_send_data((uint8_t)(color & 0x00FF));
+        }
+
+        // now print bottom line
+        ili9341_set_cursor_position((x_bottom + border_px), x_bottom, y_right, y_left);
+
+        ili9341_send_command(ILI9341_CMD_WRITE_MEM);
+        for (i = 0; i < pixels_in_line; i++)
+        {
+                ili9341_send_data((uint8_t)(color >> 8));
+                ili9341_send_data((uint8_t)(color & 0x00FF));
+        }
+
+        // print left line'
+        pixels_in_line = (x_top - x_bottom) * border_px;
+        ili9341_set_cursor_position(x_top, x_bottom, y_left, (y_left - border_px));
+
+        ili9341_send_command(ILI9341_CMD_WRITE_MEM);
+        for (i = 0; i < pixels_in_line; i++)
+        {
+                ili9341_send_data((uint8_t)(color >> 8));
+                ili9341_send_data((uint8_t)(color & 0x00FF));
+        }
+
+        // print right line
+        ili9341_set_cursor_position(x_top, x_bottom, (y_right + border_px), y_right);
+
+        ili9341_send_command(ILI9341_CMD_WRITE_MEM);
+        for (i = 0; i < pixels_in_line; i++)
+        {
+                ili9341_send_data((uint8_t)(color >> 8));
+                ili9341_send_data((uint8_t)(color & 0x00FF));
+        }
+}
+
+void ili9341_put_char(uint16_t x, uint16_y, uint8_t character)
+{
 
 }
