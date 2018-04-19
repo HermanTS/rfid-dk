@@ -10,17 +10,36 @@
 
 #include "stm32f10x.h"
 #include "spi.h"
+#include "board.h"
 
-#if  !defined(SET) || !defined(RESET)
-#define SET             (uint8_t)0x01
-#define RESET           !SET
+// public functions
+void ili9341_gpio_init();
+void ili9341_init();
+uint32_t ili9341_read_ID(void);
+void ili9341_led_set_state(uint8_t state);
+uint8_t ili9341_read_byte(uint8_t cmd);
+
+/*
+ * drawn functions
+ */
+void ili9341_fill(uint16_t color);
+void ili9341_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
+void ili9341_draw_line(uint16_t x, uint16_t y, uint16_t colors[], uint32_t line_size);
+void ili9341_draw_sqare(uint16_t x_top, uint16_t x_bottom,
+                        uint16_t y_right, uint16_t y_left,
+                        uint16_t border_px, uint16_t color);
+
+#if !defined(SET) && !defined(RESET)
+#define SET     (uint8_t)0x01
+#define RESET   (uint8_t)~SET
 #endif
 
 #ifndef ILI9341_GPIO
 #define ILI9341_GPIO                    GPIOA
-#define ILI9341_PIN_RESET_NO            2
-#define ILI9341_PIN_DC_NO               3
+#define ILI9341_PIN_RESET_NO            3
+#define ILI9341_PIN_DC_NO               2
 #define ILI9341_PIN_CS_NO               4
+#define ILI9341_PIN_LED_NO              1
 #endif
 
 
@@ -31,6 +50,9 @@
 #define ILI9341_PIN_RESET               (1 << ILI9341_PIN_RESET_NO)
 #define ILI9341_PIN_DC                  (1 << ILI9341_PIN_DC_NO)
 #define ILI9341_PIN_CS                  (1 << ILI9341_PIN_CS_NO)
+#ifdef ILI9341_PIN_LED_NO
+#define ILI9341_PIN_LED                 (1 << ILI9341_PIN_LED_NO)
+#endif
 
 #ifndef ILI9341_SCREEN_SIZE
 #define ILI9341_WIDTH       240

@@ -290,10 +290,10 @@ static void ili9341_set_cursor_position(uint16_t x_max, uint16_t x_min,
         ili9341_send_data((uint8_t)(x_max & 0x00FF));
 
         ili9341_send_command(ILI9341_CMD_SET_PAGE_ADDR);
-        ili9341_send_data((uint8_t)(y_max >> 8));
-        ili9341_send_data((uint8_t)(y_max & 0x00FF));
         ili9341_send_data((uint8_t)(y_min >> 8));
         ili9341_send_data((uint8_t)(y_min & 0x00FF));
+        ili9341_send_data((uint8_t)(y_max >> 8));
+        ili9341_send_data((uint8_t)(y_max & 0x00FF));
 }
 
 void ili9341_fill(uint16_t color)
@@ -332,8 +332,8 @@ void ili9341_draw_line(uint16_t x, uint16_t y, uint16_t colors[], uint32_t line_
         ili9341_send_command(ILI9341_CMD_WRITE_MEM);
         for (i = 0; i < line_size; i++)
         {
-                ili9341_send_data((uint8_t)(colors[i]>>8));
-                ili9341_send_data((uint8_t)(colors[i]&0x00FF));
+                ili9341_send_data((uint8_t)(colors[i] >> 8));
+                ili9341_send_data((uint8_t)(colors[i] & 0x00FF));
         }
 }
 
