@@ -8,10 +8,6 @@
 #ifndef INCLUDE_ILI9341_H_
 #define INCLUDE_ILI9341_H_
 
-#include "stm32f10x.h"
-#include "spi.h"
-#include "board.h"
-
 // public functions
 void ili9341_gpio_init();
 void ili9341_init();
@@ -28,11 +24,6 @@ void ili9341_draw_line(uint16_t x, uint16_t y, uint16_t colors[], uint32_t line_
 void ili9341_draw_sqare(uint16_t x_top, uint16_t x_bottom,
                         uint16_t y_right, uint16_t y_left,
                         uint16_t border_px, uint16_t color);
-
-#if !defined(SET) && !defined(RESET)
-#define SET     (uint8_t)0x01
-#define RESET   (uint8_t)~SET
-#endif
 
 #ifndef ILI9341_GPIO
 #define ILI9341_GPIO                    GPIOA

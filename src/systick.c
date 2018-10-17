@@ -6,7 +6,7 @@
  */
 #include "systick.h"
 #include "stdint.h"
-#include "stm32f10x.h"
+#include "stm32f103xb.h"
 
 volatile uint32_t tick;
 

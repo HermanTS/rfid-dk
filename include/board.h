@@ -10,6 +10,10 @@
 
 #include "stm32f103xb.h"
 
+#if !defined(SET) && !defined(RESET)
+#define SET     (uint8_t)0x01
+#define RESET   (uint8_t)~SET
+#endif
 
 
 #endif /* INCLUDE_BOARD_H_ */

@@ -4,10 +4,11 @@
  *  Created on: 27 мар. 2018 г.
  *      Author: gstsvetkov
  */
+#include "stm32f103xb.h"
 #include "ili9341.h"
+#include "spi.h"
 #include "board.h"
 #include "systick.h"
-
 
 uint32_t i;
 
