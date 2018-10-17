@@ -8,7 +8,9 @@
 #ifndef INCLUDE_SPI_H_
 #define INCLUDE_SPI_H_
 
-#include "stm32f10x.h"
+#include "board.h"
+#include "stm32f103xb.h"
+
 
 void spi_send_byte(SPI_TypeDef *spi , uint8_t data);
 uint8_t spi_read_byte(SPI_TypeDef *spi);
