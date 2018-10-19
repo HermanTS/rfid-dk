@@ -43,11 +43,6 @@ void spi1_gpio_init(){
          * NSS, RST output - P/P
          */
 
-        // chip select CS: output, 50MHz
-        GPIOA->CRL   |=  GPIO_CRL_MODE4;    //
-        GPIOA->CRL   &= ~GPIO_CRL_CNF4;     //
-        GPIOA->BSRR   =  GPIO_BSRR_BS4;     //
-
         // SCK: output, 50MHz
         GPIOA->CRL   |=  GPIO_CRL_MODE5;    //
         GPIOA->CRL   &= ~GPIO_CRL_CNF5;     //
@@ -68,7 +63,6 @@ void spi1_gpio_init(){
 void spi1_periph_init(void){
         //enable clok to SPI1
         RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
-        //RCC->AHBENR  |= RCC_AHBENR_CRCEN;
 
         //clear previos settings
         SPI1->CR1 &= (uint16_t)~0xff;

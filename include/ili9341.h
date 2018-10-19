@@ -8,6 +8,14 @@
 #ifndef INCLUDE_ILI9341_H_
 #define INCLUDE_ILI9341_H_
 
+//color map
+typedef enum {
+    white = 0xFFFF,
+    black = 0x0000,
+    red = 0xF800,
+    yellow = 0xFFE0,
+}color_t;
+
 // public functions
 void ili9341_gpio_init();
 void ili9341_init();
@@ -15,15 +23,14 @@ uint32_t ili9341_read_ID(void);
 void ili9341_led_set_state(uint8_t state);
 uint8_t ili9341_read_byte(uint8_t cmd);
 
-/*
- * drawn functions
- */
-void ili9341_fill(uint16_t color);
-void ili9341_draw_pixel(uint16_t x, uint16_t y, uint16_t color);
-void ili9341_draw_line(uint16_t x, uint16_t y, uint16_t colors[], uint32_t line_size);
+// drawn functions
+void ili9341_fill_screen(color_t color);
+void ili9341_draw_pixel(uint16_t x, uint16_t y, color_t color);
+void ili9341_draw_point(uint16_t x, uint16_t y, color_t color, uint8_t size);
+void ili9341_draw_line(uint16_t x, uint16_t y, color_t color, uint32_t line_size);
 void ili9341_draw_sqare(uint16_t x_top, uint16_t x_bottom,
                         uint16_t y_right, uint16_t y_left,
-                        uint16_t border_px, uint16_t color);
+                        uint16_t border_px, color_t color);
 
 #ifndef ILI9341_GPIO
 #define ILI9341_GPIO                    GPIOA
@@ -52,7 +59,6 @@ void ili9341_draw_sqare(uint16_t x_top, uint16_t x_bottom,
 #endif
 
 //commands
-
 #define ILI9341_CMD_NOP                         0x00
 #define ILI9341_CMD_SOFT_RESET                  0x01
 #define ILI9341_CMD_RD_ID                       0x04
