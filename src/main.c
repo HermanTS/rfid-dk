@@ -6,7 +6,6 @@
 #include "system_stm32f1xx.h"
 #include "systick.h"
 #include "ili9341.h"
-#include "GUI.h"
 #include "board.h"
 #include "spi.h"
 
@@ -25,10 +24,9 @@ void main()
     ili9341_led_set_state(SET);
     ili9341_fill_screen(yellow);
 
-    GUI_Init();
-    GUI_SetBkColor(GUI_BLACK);
 
     while (1)
     {
+
     }
 }
