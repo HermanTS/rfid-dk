@@ -22,7 +22,9 @@ void main()
     ili9341_init();
     //switch on light
     ili9341_led_set_state(SET);
-    ili9341_fill_screen(yellow);
+    ili9341_fill_screen(white);
+    ili9341_draw_point(50, 50, black, 25);
+    ili9341_draw_line(100, 125, 200, 300, yellow, 3);
 
 
     while (1)

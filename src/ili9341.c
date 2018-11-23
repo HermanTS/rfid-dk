@@ -9,9 +9,6 @@
 #include "spi.h"
 #include "board.h"
 #include "systick.h"
-#include "symbol-table.h"
-
-uint32_t i;
 
 void ili9341_led_set_state(uint8_t state){
 #ifdef ILI9341_PIN_LED
@@ -268,7 +265,7 @@ uint32_t ili9341_read_ID(void)
         ili9341_cs_set_state(RESET);
         ili9341_dc_set_state(RESET);
         id_buf[0] = spi_send_read(ILI9341_SPI, ILI9341_CMD_RD_ID);
-        for(i=1; i<=3; i++)
+        for(int i=1; i<=3; i++)
         {
             ili9341_dc_set_state(SET);
             id_buf[i] = spi_send_read(ILI9341_SPI, ILI9341_CMD_NOP);
@@ -310,7 +307,7 @@ void ili9341_fill_screen(color_t color)
         ili9341_set_cursor_position(ILI9341_WIDTH - 1, 0, ILI9341_HEIGHT -1, 0);
 
         ili9341_send_command(ILI9341_CMD_WRITE_MEM);
-        for (i = 0; i < ILI9341_PIXEL_COUNT; i++)
+        for (int i = 0; i < ILI9341_PIXEL_COUNT; i++)
         {
             ili9341_set_color(color);
         }
@@ -344,68 +341,20 @@ void ili9341_draw_point(uint16_t x, uint16_t y, color_t color, uint8_t size)
 
 void ili9341_draw_simbol(uint16_t x, uint16_t y, color_t color, color_t phone, const uint8_t *sim)
 {
-        ili9341_cs_set_state(RESET);
-        ili9341_set_cursor_position(x, x - 8, y, y - 8);
 
-
-        ili9341_cs_set_state(SET);
 }
 
-void ili9341_draw_line(uint16_t x, uint16_t y, color_t color, uint32_t line_size)
+void ili9341_draw_line(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end, color_t color, uint32_t line_size)
 {
 
-        ili9341_set_cursor_position(x, x, y, y);
-
-        ili9341_send_command(ILI9341_CMD_WRITE_MEM);
-        for (i = 0; i < line_size; i++)
-        {
-            ili9341_set_color(color);
-        }
 }
 
 void ili9341_draw_sqare(uint16_t x_top, uint16_t x_bottom,
                         uint16_t y_right, uint16_t y_left,
                         uint16_t border_px, color_t color)
 {
-        uint32_t pixels_in_line;
 
-        // firstly print top line
-        pixels_in_line = (y_right - y_left) * border_px;
-        ili9341_set_cursor_position(x_top, (x_top - border_px), y_right, y_left);
 
-        ili9341_send_command(ILI9341_CMD_WRITE_MEM);
-        for (i = 0; i < pixels_in_line; i++)
-        {
-                ili9341_set_color(color);
-        }
-
-        // now print bottom line
-        ili9341_set_cursor_position((x_bottom + border_px), x_bottom, y_right, y_left);
-
-        ili9341_send_command(ILI9341_CMD_WRITE_MEM);
-        for (i = 0; i < pixels_in_line; i++)
-        {
-                ili9341_set_color(color);
-        }
-
-        // print left line'
-        pixels_in_line = (x_top - x_bottom) * border_px;
-        ili9341_set_cursor_position(x_top, x_bottom, y_left, (y_left - border_px));
-
-        ili9341_send_command(ILI9341_CMD_WRITE_MEM);
-        for (i = 0; i < pixels_in_line; i++)
-        {
-                ili9341_set_color(color);
-        }
-
-        // print right line
-        ili9341_set_cursor_position(x_top, x_bottom, (y_right + border_px), y_right);
-
-        ili9341_send_command(ILI9341_CMD_WRITE_MEM);
-        for (i = 0; i < pixels_in_line; i++)
-        {
-                ili9341_set_color(color);
-        }
 }
 
 /*void ili9341_put_char(uint16_t x, uint16_t y, uint8_t character, color_t color)

@@ -8,6 +8,13 @@
 #ifndef INCLUDE_ILI9341_H_
 #define INCLUDE_ILI9341_H_
 
+#include <stdint.h>
+
+#if !defined(SET) && !defined(RESET)
+#define SET     (uint8_t)0x01
+#define RESET   (uint8_t)~SET
+#endif
+
 //color map
 typedef enum {
     white = 0xFFFF,
@@ -27,7 +34,9 @@ uint8_t ili9341_read_byte(uint8_t cmd);
 void ili9341_fill_screen(color_t color);
 void ili9341_draw_pixel(uint16_t x, uint16_t y, color_t color);
 void ili9341_draw_point(uint16_t x, uint16_t y, color_t color, uint8_t size);
-void ili9341_draw_line(uint16_t x, uint16_t y, color_t color, uint32_t line_size);
+void ili9341_draw_line(uint16_t x_start, uint16_t x_end,
+                       uint16_t y_start, uint16_t y_end,
+                       color_t color, uint32_t line_size);
 void ili9341_draw_sqare(uint16_t x_top, uint16_t x_bottom,
                         uint16_t y_right, uint16_t y_left,
                         uint16_t border_px, color_t color);
