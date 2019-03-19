@@ -5,6 +5,7 @@
  *      Author: gstsvetkov
  */
 #include "stm32f103xb.h"
+#include "stdlib.h"
 #include "ili9341.h"
 #include "spi.h"
 #include "board.h"
@@ -316,23 +317,25 @@ void ili9341_fill_screen(color_t color)
 
 void ili9341_draw_pixel(uint16_t x, uint16_t y, color_t color)
 {
-
-        ili9341_set_cursor_position(x, x, y, y);
+        ili9341_cs_set_state(RESET);
+        ili9341_set_cursor_position(x, x+1, y, y+1);
 
         ili9341_send_command(ILI9341_CMD_WRITE_MEM);
         ili9341_set_color(color);
+
+        ili9341_cs_set_state(SET);
 }
 
 /*
- * x, y coordinates is start of point
+ * x, y coordinates is top left angle
  */
-void ili9341_draw_point(uint16_t x, uint16_t y, color_t color, uint8_t size)
+void ili9341_draw_point(uint16_t x, uint16_t y, color_t color, uint32_t size)
 {
         ili9341_cs_set_state(RESET);
         ili9341_set_cursor_position(x, x - size, y, y - size);
 
         ili9341_send_command(ILI9341_CMD_WRITE_MEM);
-        for (uint8_t i = 0; i < size*size; i++)
+        for (uint32_t i = 0; i < (size*size -1); i++)
         {
             ili9341_set_color(color);
         }
@@ -344,21 +347,109 @@ void ili9341_draw_simbol(uint16_t x, uint16_t y, color_t color, color_t phone, c
 
 }
 
-void ili9341_draw_line(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end, color_t color, uint32_t line_size)
+void ili9341_draw_vertical_line(uint16_t x, uint16_t y_start, uint16_t lenght, color_t color, uint32_t line_fat)
 {
 
+    if (line_fat == 0)
+        return;
+#if 0
+    for (uint32_t j = 0; j <= line_fat; j++)
+    {
+        for (uint16_t i = 0; i < lenght; i++)
+        {
+            ili9341_draw_pixel(x + j, y_start + i, color);
+        }
+    }
+#else
+    ili9341_cs_set_state(RESET);
+    ili9341_set_cursor_position(x, x - line_fat, y_start + lenght, y_start);
+
+    ili9341_send_command(ILI9341_CMD_WRITE_MEM);
+    for (uint32_t i = 0; i < (lenght*line_fat); i++)
+    {
+        ili9341_set_color(color);
+    }
+    ili9341_cs_set_state(SET);
+#endif
 }
+
+void ili9341_draw_horizontal_line(uint16_t x_start, uint16_t y, uint16_t lenght, color_t color, uint32_t line_fat)
+{
+    if (line_fat == 0)
+        return;
+#if 0
+    for (uint32_t j = 0; j <= line_fat; j++)
+    {
+        for (uint16_t i = 0; i < lenght; i++)
+        {
+            ili9341_draw_pixel(x_start + i, y + j, color);
+        }
+    }
+#else
+    ili9341_cs_set_state(RESET);
+    ili9341_set_cursor_position(x_start + lenght, x_start, y, y - line_fat);
+
+    ili9341_send_command(ILI9341_CMD_WRITE_MEM);
+    for (uint32_t i = 0; i < (lenght*line_fat); i++)
+    {
+        ili9341_set_color(color);
+    }
+    ili9341_cs_set_state(SET);
+#endif
+}
+
+void ili9341_draw_line(uint16_t x_start, uint16_t x_end, uint16_t y_start, uint16_t y_end, color_t color, uint32_t line_fat)
+{
+    if (line_fat == 0)
+        return;
+
+    if (x_start == x_end)
+    {
+        uint16_t curr_y = (y_start <= y_end) ? y_start : y_end;
+        ili9341_draw_vertical_line(x_start, curr_y, abs(y_end - y_start), color, line_fat);
+        return;
+    }
+
+    if (y_start == y_end)
+    {
+        uint16_t curr_x = (x_start <= x_end) ? x_start : x_end;
+        ili9341_draw_horizontal_line(curr_x, y_start, abs(x_end - x_start), color, line_fat);
+        return;
+    }
+
+
+    int dx = abs(x_end-x_start), sx = x_start<x_end ? 1 : -1;
+    int dy = -abs(y_end-y_start), sy = y_start<y_end ? 1 : -1;
+    int err = dx+dy, e2;
+    while (1)
+    {
+        ili9341_draw_pixel(x_start, y_start, color);
+        e2 = 2*err;
+        if (e2 >= dy)
+        {
+            if (x_start == x_end) break;
+            err += dy; x_start += sx;
+        }
+        if (e2 <= dx)
+        {
+            if (y_start == y_end) break;
+            err += dx; y_start += sy;
+        }
+    }
+
+
+}
+
 
 void ili9341_draw_sqare(uint16_t x_top, uint16_t x_bottom,
                         uint16_t y_right, uint16_t y_left,
-                        uint16_t border_px, color_t color)
-{
-
-
-}
-
-/*void ili9341_put_char(uint16_t x, uint16_t y, uint8_t character, color_t color)
+                        color_t color, uint16_t border_px)
 {
 
 }
-*/
+
+void ili9341_put_char(uint16_t x, uint16_t y, uint8_t character, color_t color)
+{
+
+}
+

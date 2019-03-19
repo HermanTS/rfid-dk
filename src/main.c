@@ -22,9 +22,15 @@ void main()
     ili9341_init();
     //switch on light
     ili9341_led_set_state(SET);
-    ili9341_fill_screen(white);
-    ili9341_draw_point(50, 50, black, 25);
-    ili9341_draw_line(100, 125, 200, 300, yellow, 3);
+
+    //test functions
+    ili9341_fill_screen(yellow);
+    ili9341_draw_point(50, 100, red, 25);
+    ili9341_draw_pixel(ILI9341_WIDTH/2, ILI9341_HEIGHT/2, red);
+    ili9341_draw_line(50, 150, 200, 300, black, 1);
+    ili9341_draw_line(150, 50, 200, 300, black, 3);
+    ili9341_draw_line(200, 200, 150, 200, red, 4);
+    ili9341_draw_line(0, ILI9341_WIDTH, ILI9341_HEIGHT, ILI9341_HEIGHT, white, 4);
 
 
     while (1)
